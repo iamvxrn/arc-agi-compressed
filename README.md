@@ -70,7 +70,30 @@ python3 -m arcc.cli compare runs/new.json runs/base.json
 A solver is any callable `solve(train_pairs, test_input) -> grid | [grid, grid] | None`.
 
 For the interactive arm, `arcc.arc3` runs any seed-taking command once per seed in
-parallel and applies the same statistics — see its docstring.
+parallel and applies the same statistics:
+
+```python
+from arcc import arc3
+sub  = arc3.load_subset("arc3c")
+runs = arc3.run_seeds(bench_command, seeds=range(1, 9), out_dir="runs/idea-x")
+print(arc3.verdict(runs, sub, base=saved_baseline))
+```
+
+**arc3c** is a *purpose-built probe set*, not a representative sample, and the file
+says so: ARC-AGI-3's mechanic tags come from probing the games, so unlike the
+static features above they are not solver-independent. It carries two groups —
+`probe`, the four movement games where the open problem lives, and `guard`,
+`vc33` and `lp85`, which exist because the `inert` fix looked neutral on the probe
+group and cost those two 0.28 each with all 16 seeds negative.
+
+A change is a win only when **probe improves and guard does not regress**.
+`arc3.verdict` refuses to call anything else a win. The recorded baseline of
+2026-09-06 ships in the subset file: probe 0.5527 ± 0.2140, guard 4.3027 ± 0.5264,
+with `sp80` and `m0r0` at zero levels on every seed.
+
+There is no `arc2c`. ARC-AGI-2 data is not local and no solver here scores above
+zero on static tasks, so a subset would be a directory of ids with nothing to run
+against it.
 
 ## What is established, and what is not
 

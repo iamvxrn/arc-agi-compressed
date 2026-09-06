@@ -1,0 +1,32 @@
+{
+ "_comment": "arc3c -- the compressed probe set for ARC-AGI-3. This is NOT a representative sample and no claim of representativeness is made: ARC-AGI-3's mechanic tags come from probing the games, so unlike the static features in select.py they are not solver-independent. It is a PURPOSE-BUILT probe set -- the games where the current open problem lives, plus a guard against breaking what already works. Rationale for each group is below. Swap the groups when the open problem moves.",
+ "name": "arc3c",
+ "source": "ARC-AGI-3 public game set",
+ "groups": {
+  "probe": {
+   "games": ["g50t", "ls20", "sp80", "m0r0"],
+   "why": "the four movement/keyboard games. 17 of 25 public games need non-click actions and every recorded win is click-only, so this is where the score is missing. sp80 and m0r0 complete no level on any seed at any budget."
+  },
+  "guard": {
+   "games": ["vc33", "lp85"],
+   "why": "regression guard, not decoration. The inert write-off fix looked neutral on the probe group and cost lp85 -0.284 and vc33 -0.277 with all 16 seeds negative. A change that quietly breaks the games that score is a loss, and a probe-only run cannot see it."
+  }
+ },
+ "settings": {
+  "repeats": 3,
+  "max_steps": 250,
+  "_note": "every recorded baseline uses these; changing them makes runs incomparable rather than merely slower"
+ },
+ "baseline_2026_09_06": {
+  "probe": {"mean": 0.5527, "sd": 0.6053, "se": 0.2140, "seeds": 8},
+  "guard": {"mean": 4.3027, "sd": 1.4888, "se": 0.5264, "seeds": 8},
+  "levels_per_seed": {
+   "g50t": [0, 1, 1, 0, 0, 0, 1, 1],
+   "ls20": [0, 0, 1, 0, 0, 0, 1, 1],
+   "sp80": [0, 0, 0, 0, 0, 0, 0, 0],
+   "m0r0": [0, 0, 0, 0, 0, 0, 0, 0],
+   "vc33": [2, 2, 2, 2, 2, 2, 2, 2],
+   "lp85": [1, 1, 1, 1, 1, 1, 1, 1]
+  }
+ }
+}

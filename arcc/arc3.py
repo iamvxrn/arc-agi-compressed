@@ -29,6 +29,8 @@ from typing import Mapping, Sequence
 
 from .stats import band, paired, summarize
 
+SUBSETS = pathlib.Path(__file__).resolve().parent.parent / "subsets"
+
 
 def run_seeds(command: Sequence[str], seeds: Sequence[int], out_dir: str | pathlib.Path,
               seed_flag: str = "--seed", out_flag: str = "--out",
@@ -86,4 +88,43 @@ def report(runs: Mapping[int, dict], groups: Mapping[str, Sequence[str]],
                 continue
             c = paired(now, base[name])
             lines.append(f"{name:12} {c}  on {len(c.seeds)} shared seeds")
+    return "\n".join(lines)
+
+
+def load_subset(name: str = "arc3c") -> dict:
+    """The probe set definition: groups, settings and the recorded baseline."""
+    path = pathlib.Path(name)
+    if not path.exists():
+        path = SUBSETS / (name if name.endswith(".json") else f"{name}.json")
+    return json.loads(path.read_text())
+
+
+def games(subset: dict) -> list[str]:
+    """Every game in the subset, probe group first."""
+    out: list[str] = []
+    for g in subset["groups"].values():
+        out.extend(x for x in g["games"] if x not in out)
+    return out
+
+
+def verdict(runs: Mapping[int, dict], subset: dict,
+            base: Mapping[str, Mapping[int, float]] | None = None) -> str:
+    """The full report, and the two-sided rule a change has to satisfy.
+
+    A win requires BOTH halves: the probe group improves and the guard group does
+    not regress. Reporting only the first is how a keyboard fix that costs the
+    scoring games gets recorded as progress.
+    """
+    groups = {k: v["games"] for k, v in subset["groups"].items()}
+    lines = [report(runs, groups, base)]
+
+    if base:
+        probe = paired(group(runs, groups["probe"]), base["probe"])
+        guard = paired(group(runs, groups["guard"]), base["guard"])
+        won = probe.verdict == "IMPROVED" and guard.verdict != "REGRESSED"
+        lines += ["", f"probe {probe.verdict}, guard {guard.verdict}"
+                      f"  ->  {'A WIN' if won else 'NOT A WIN'}"]
+        if probe.verdict == "IMPROVED" and guard.verdict == "REGRESSED":
+            lines.append("the probe moved and the guard broke -- this is the exact"
+                         " shape the guard group exists to catch")
     return "\n".join(lines)
